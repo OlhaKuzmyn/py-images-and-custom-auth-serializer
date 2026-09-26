@@ -1,6 +1,10 @@
+import os
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class CinemaHall(models.Model):
@@ -35,6 +39,15 @@ class Actor(models.Model):
         return f"{self.first_name} {self.last_name}"
 
 
+def image_custom_path(instance, filename):
+   _, extension = os.path.splitext(filename)
+   return os.path.join(
+       "uploads/images/",
+       f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
+   )
+
+
+
 class Movie(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
@@ -44,6 +57,11 @@ class Movie(models.Model):
     )
     actors = models.ManyToManyField(
         Actor, related_name="movies"
+    )
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        upload_to=image_custom_path
     )
 
     class Meta:
